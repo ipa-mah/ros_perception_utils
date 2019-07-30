@@ -1,32 +1,50 @@
-# Prerequisites
-*.d
+# default .gitignore file for ipa320 repositories
+# master file can be found in https://github.com/ipa320/care-o-bot/blob/indigo_dev/.gitignore
 
-# Compiled Object files
-*.slo
-*.lo
-*.o
-*.obj
+build/
+bin/
+lib/
+data_collection/
+objects/
+data_dslr/
+data/
+# generated docs
+*.dox
+*.wikidoc
+*.tar
+# eclipse
+.project
+.cproject
 
-# Precompiled Headers
-*.gch
-*.pch
+# qcreator
+qtcreator-*
+*.user
 
-# Compiled Dynamic libraries
-*.so
-*.dylib
-*.dll
+# Emacs
+.#*
 
-# Fortran module files
-*.mod
-*.smod
+# VI/VIM
+*.swp
 
-# Compiled Static libraries
-*.lai
-*.la
-*.a
-*.lib
+# python files
+*.pyc
+*.pco
 
-# Executables
-*.exe
-*.out
-*.app
+# temporary files
+*~
+
+# merge conflict files
+*.orig
+*BACKUP*
+*BASE*
+*LOCAL*
+*REMOTE*
+
+# Catkin custom files
+#CATKIN_IGNORE
+*.autosave
+.idea
+# bag and tar files
+*.bag
+*.tar
+
