@@ -16,7 +16,7 @@ set(catkin_BUILD_PACKAGES ${catkin_RUN_PACKAGES} cmake_modules )
 
 ## Find catkin macros and libraries
 find_package(catkin REQUIRED COMPONENTS ${catkin_BUILD_PACKAGES})
-find_package(OpenCV 3 REQUIRED)
+find_package(OpenCV REQUIRED)
 find_package(Eigen3 REQUIRED)
 
 FIND_PACKAGE(OpenGL REQUIRED)
