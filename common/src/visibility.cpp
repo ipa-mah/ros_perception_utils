@@ -1,8 +1,8 @@
 #include "ros_perception_utils/visibility.hpp"
-MeshVisibility::MeshVisibility(ros::NodeHandle& node):node_(node),focal_x_(0),focal_y_(0),
+MeshVisibility::MeshVisibility():focal_x_(0),focal_y_(0),
     c_x_(0),c_y_(0),image_width_(0),image_height_(0)
 {
-
+    marker2object_.setIdentity();
 }
 MeshVisibility::~MeshVisibility()
 {}
@@ -31,8 +31,10 @@ bool MeshVisibility::readTriMesh(const std::string mesh_fname)
 }
 bool MeshVisibility::readIntrinsicsAndCam2WorldPoses(const std::string filepath)
 {
-    cv::FileStorage fs(filepath+"/cam_to_world_poses.yaml",cv::FileStorage::READ);
-
+    cv::FileStorage fs(filepath+"/depth_cam2world_poses.yaml",cv::FileStorage::READ);
+    cv::Mat cvMat;
+    fs["CENTROID"]>>cvMat;
+    cv::cv2eigen(cvMat,marker2object_);
     // iterate through a sequence using FileNodeIterator
     for(int i=0;;i++)
     {
@@ -49,7 +51,11 @@ bool MeshVisibility::readIntrinsicsAndCam2WorldPoses(const std::string filepath)
         }
         cv::Mat cam2world;
         fs[transform_flag]>>cam2world;
-
+        Eigen::Matrix4d pose;
+        Eigen::Matrix4d eigenMat;
+        cv::cv2eigen(cam2world,eigenMat);
+        pose = marker2object_ *eigenMat; //cam to object centroid
+        cv::eigen2cv(pose,cam2world);
         glm::mat4 trans;
         for (int i = 0; i < 4; ++i)
             for (int j = 0; j < 4; ++j)
@@ -59,8 +65,8 @@ bool MeshVisibility::readIntrinsicsAndCam2WorldPoses(const std::string filepath)
             }
         cam2world_poses_.push_back(trans);
     }
-    fs.release();
 
+    fs.release();
     std::ifstream file ;
     std::cout<<"read camera parameters"<<std::endl;
     std::string cam_info_file = filepath +"/texture_camera.txt";
@@ -93,11 +99,11 @@ bool MeshVisibility::readIntrinsicsAndCam2WorldPoses(const std::string filepath)
     transform_perspective_[2][2] = (kNear + kFar) / (kNear - kFar);
     transform_perspective_[2][3] = -1;  // glm matrix is in column-major
     transform_perspective_[3][2] = 2 * kFar * kNear / (kNear - kFar);
-    std::cout<<"transform_perspective: "<<glm::to_string(transform_perspective_)<<std::endl;
-
-    image_buffer_arr_.resize(image_height_);
-    for(int i=0;i<image_height_;i++)
-        image_buffer_arr_[i].resize(3*image_width_);
+    //    image_buffer_arr_ = new float*[image_height_];
+    //    for(int i=0;i<image_height_;i++)
+    //    {
+    //        image_buffer_arr_[i] = new float[3*image_width_];
+    //    }
 
 }
 
@@ -106,6 +112,7 @@ glm::mat4 MeshVisibility::computeTransformationForFrame(int frame_idx)
 {
     // In the 3D world space, the model is fixed while the camera is moving under different poses.
     // However, in OpenGL space, the camera position is fixed while the model is transformed inversely.
+
     glm::mat4 trans_model = glm::inverse(cam2world_poses_[frame_idx]); //extrinsics
     //std::cout<<glm::to_string(cam2world_poses_[frame_idx])<<std::endl;
     glm::mat4 trans_scale = glm::mat4(1.0);
@@ -147,21 +154,21 @@ void MeshVisibility::initModelDataBuffer()
                           (void *)offsetof(Vertex, color));  // name of 'color' variable in struct Vertex
 
     // texture uv coordinates
-    /*
-    if (flag_vtx_texture_)
+
+    if (tri_mesh_.vtx_texture)
     {
         glEnableVertexAttribArray(2);
         glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex),
                               (void *)offsetof(Vertex, uv));  // name of 'color' variable in struct Vertex
     }
-    */
+
     // normals
-    //if (flag_vtx_normal_)
-    //{
-    glEnableVertexAttribArray(3);
-    glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex),
-                          (void *)offsetof(Vertex, normal));  // name of 'color' variable in struct Vertex
-    // }
+    if (tri_mesh_.vtx_normal)
+    {
+        glEnableVertexAttribArray(3);
+        glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex),
+                              (void *)offsetof(Vertex, normal));  // name of 'normal' variable in struct Vertex
+    }
 
 
     //cv::imwrite("tst.png",tri_mesh_.texture_atlas);
@@ -226,7 +233,8 @@ void MeshVisibility::extractImageBuffer()
     image_buffer_.setReadBuffer(GBuffer::GBUFFER_TEXTURE_TYPE_DEPTH);
     // In 'image_buffer_arr_', the channel 0 is depth value, while channel 2 is vertex index.
     // This is set in the fragment shader 'depth.frag'.
-    glReadPixels(0, 0, image_width_, image_height_, GL_RGB, GL_FLOAT, &image_buffer_arr_);
+    glReadPixels(0, 0, image_width_, image_height_, GL_RGB, GL_FLOAT,image_buffer_arr_);
+
 }
 
 
@@ -235,7 +243,7 @@ void MeshVisibility::saveVisibleVertices2Binary(const std::string filename)
 {
 
     image_buffer_.setReadBuffer(GBuffer::GBUFFER_TEXTURE_TYPE_DEPTH);
-    glReadPixels(0, 0, image_width_, image_height_, GL_RGB, GL_FLOAT, &image_buffer_arr_);
+    glReadPixels(0, 0, image_width_, image_height_, GL_RGB, GL_FLOAT,image_buffer_arr_);
 
     // Put indices of visible vertices into an array and save it in binary
     std::unordered_set<int> set_vlist;
@@ -261,7 +269,7 @@ void MeshVisibility::saveVisibleVertices2Binary(const std::string filename)
 void MeshVisibility::saveVisibilityImage2Binary(const std::string filename)
 {
     image_buffer_.setReadBuffer(GBuffer::GBUFFER_TEXTURE_TYPE_DEPTH);
-    glReadPixels(0, 0, image_width_, image_height_, GL_RGB, GL_FLOAT, &image_buffer_arr_);
+    glReadPixels(0, 0, image_width_, image_height_, GL_RGB, GL_FLOAT, image_buffer_arr_);
     std::vector<int> visible_vlist;
     visible_vlist.reserve(image_width_ * image_height_);
     for (int i = 0; i < image_height_; i++)
@@ -286,7 +294,7 @@ void MeshVisibility::saveVisibilityImage2Binary(const std::string filename)
 void MeshVisibility::saveDepth2PNG(const std::string filename)
 {
     image_buffer_.setReadBuffer(GBuffer::GBUFFER_TEXTURE_TYPE_DEPTH);
-    glReadPixels(0, 0, image_width_, image_height_, GL_RGB, GL_FLOAT, &image_buffer_arr_);
+    glReadPixels(0, 0, image_width_, image_height_, GL_RGB, GL_FLOAT, image_buffer_arr_);
 
     cv::Mat mat(image_height_, image_width_, CV_16U);
     for (int i = 0; i < image_height_; i++)
@@ -305,7 +313,7 @@ void MeshVisibility::saveDepth2PNG(const std::string filename)
 void MeshVisibility::saveColor2PNG(const std::string filename)
 {
     image_buffer_.setReadBuffer(GBuffer::GBUFFER_TEXTURE_TYPE_COLOR);
-    glReadPixels(0, 0, image_width_, image_height_, GL_RGB, GL_FLOAT, &image_buffer_arr_);
+    glReadPixels(0, 0, image_width_, image_height_, GL_RGB, GL_FLOAT,image_buffer_arr_);
 
     cv::Mat mat(image_height_, image_width_, CV_8UC3);
     for (int i = 0; i < image_height_; i++)

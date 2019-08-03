@@ -20,8 +20,8 @@
 #include "ros_perception_utils/shader.h"
 #include "ros_perception_utils/vision_utils.hpp"
 GLFWwindow* window;
-const int kImageWidth = 1920;
-const int kImageHeight = 1080;
+const int kWidth = 1920;
+const int kHeight = 1080;
 // glfw: whenever the window size changed (by OS or user resize) this callback function executes
 void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 {
@@ -43,13 +43,9 @@ bool initGLFW()
     glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);            // To make MacOS happy; should not be needed
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);  // We don't want the old OpenGL
     //if (program_mode_ != RENDER_MODEL)
-      //  glfwWindowHint(GLFW_VISIBLE, false);  // hide window after creation
-#ifdef __APPLE__
-    glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);  // uncomment this statement to fix compilation on OS X
-#endif
-
+    //  glfwWindowHint(GLFW_VISIBLE, false);  // hide window after creation
     // Open a window and create its OpenGL context
-    window = glfwCreateWindow(kImageWidth, kImageHeight, "RenderingWindow", NULL, NULL);
+    window = glfwCreateWindow(kWidth, kHeight, "RenderingWindow", NULL, NULL);
     if (window == NULL)
     {
         std::cout << "Failed to open GLFW window. If you have an Intel GPU, they are not 3.3 compatible. Try the 2.1 version "
@@ -84,7 +80,7 @@ bool initGLFW()
 }
 
 
-void runRenderMode(MeshVisibility& mesh)
+void runRenderMode( MeshVisibility* mesh)
 {
     Shader myshader;
     std::string render_vert = ros::package::getPath("ros_perception_utils")+"/shaders/rendermode.vert";
@@ -102,7 +98,7 @@ void runRenderMode(MeshVisibility& mesh)
         if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS)
         {
             frame_idx++;
-            if (frame_idx >= mesh.cam2world_poses_.size())
+            if (frame_idx >= mesh->cam2world_poses_.size())
                 frame_idx = 0;
             // cout << "Frame " << frame_idx + kStartFrameIdx << endl;
         }
@@ -110,17 +106,17 @@ void runRenderMode(MeshVisibility& mesh)
         {
             frame_idx--;
             if (frame_idx < 0)
-                frame_idx = mesh.cam2world_poses_.size() - 1;
-             //std::cout << "Frame " << frame_idx  << std::endl;
+                frame_idx = mesh->cam2world_poses_.size() - 1;
+            //std::cout << "Frame " << frame_idx  << std::endl;
         }
-        myshader.setMat4("transform", mesh.computeTransformationForFrame(frame_idx));
-       // std::cout<<glm::to_string( mesh.computeTransformationForFrame(frame_idx))<<std::endl;
+        myshader.setMat4("transform", mesh->computeTransformationForFrame(frame_idx));
+        // std::cout<<glm::to_string( mesh.computeTransformationForFrame(frame_idx))<<std::endl;
         // Press 'C' to show color and 'D' to show depth
         if (glfwGetKey(window, GLFW_KEY_C) == GLFW_PRESS)
         {
             myshader.setInt("flag_show_color", true);
             myshader.setBool("flag_show_texture", false);
-           // std::cout << "color " << frame_idx  << std::endl;
+            // std::cout << "color " << frame_idx  << std::endl;
 
         }
 
@@ -128,26 +124,26 @@ void runRenderMode(MeshVisibility& mesh)
         {
             myshader.setBool("flag_show_color", false);
             myshader.setBool("flag_show_texture", false);
-          //  std::cout << "depth " << frame_idx  << std::endl;
+            //  std::cout << "depth " << frame_idx  << std::endl;
 
         }
 
-        else if (glfwGetKey(window, GLFW_KEY_T) == GLFW_PRESS && mesh.tri_mesh_.vtx_texture)
+        else if (glfwGetKey(window, GLFW_KEY_T) == GLFW_PRESS && mesh->tri_mesh_.vtx_texture)
         {
             myshader.setBool("flag_show_color", false);
             myshader.setBool("flag_show_texture", true);
-          //  std::cout << "texture " << frame_idx  << std::endl;    std::cout<<"sda"<<std::endl;
+            //  std::cout << "texture " << frame_idx  << std::endl;    std::cout<<"sda"<<std::endl;
 
 
         }
 
-        if (mesh.tri_mesh_.vtx_texture)
+        if (mesh->tri_mesh_.vtx_texture)
         {
             glActiveTexture(GL_TEXTURE0);
-            glBindTexture(GL_TEXTURE_2D, mesh.texture0_);
+            glBindTexture(GL_TEXTURE_2D, mesh->texture0_);
         }
 
-        mesh.draw();
+        mesh->draw();
         // glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)
         glfwSwapBuffers(window);
         glfwPollEvents();
@@ -156,32 +152,106 @@ void runRenderMode(MeshVisibility& mesh)
     myshader.deleteProgram();
 }
 
-void runSaveMode(MeshVisibility& mesh)
+void runSaveMode(std::string output_path, MeshVisibility* mesh)
 {
     Shader myshader;
-    std::string render_vert = ros::package::getPath("ros_perception_utils")+"/shaders/savemode.vert";
-    std::string render_frag = ros::package::getPath("ros_perception_utils")+"/shaders/savemode.frag";
-    myshader.LoadShaders(render_vert.c_str(), render_frag.c_str());
+    std::string savemode_vert = ros::package::getPath("ros_perception_utils")+"/shaders/savemode.vert";
+    std::string savemode_frag = ros::package::getPath("ros_perception_utils")+"/shaders/savemode.frag";
+    myshader.LoadShaders(savemode_vert.c_str(), savemode_frag.c_str());
     myshader.setInt("texture_sampler", 0);
 
+    for(int frame_idx=0;frame_idx<mesh->cam2world_poses_.size()-2250;frame_idx++)
+    {
+        // Clear the screen
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        myshader.useProgram();
+        myshader.setFloat("near", kNear);
+        myshader.setFloat("far", kFar);
+        myshader.setBool("flag_show_color", true);
+        myshader.setBool("flag_show_texture", false);
+        //prepare image buffer
+        mesh->prepareImageBuffer();
+        // NOTE: depth test and clear function MUST be put after binding frame buffer and also need to
+        // run for each frame, otherwise the extracted depth and color data will not have depth test.
+        glEnable(GL_DEPTH_TEST);
+        glDepthFunc(GL_LESS);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+        myshader.setMat4("transform", mesh->computeTransformationForFrame(frame_idx));
+        if (mesh->tri_mesh_.vtx_texture)
+        {
+
+
+            glActiveTexture(GL_TEXTURE0);
+            glBindTexture(GL_TEXTURE_2D, mesh->texture0_);
+            myshader.setInt("texture_sampler", 0);
+        }
+
+        mesh->draw();
+        mesh->extractImageBuffer();
+
+        std::string output_fname = output_path + mesh->getFilename(frame_idx);
+        mesh->saveColor2PNG(output_fname + ".rcolor.png");
+        mesh->saveDepth2PNG(output_fname + ".rdepth.png");
+        mesh->saveVisibleVertices2Binary(output_fname + ".visibility.txt");
+
+        // This is to save the entire visibility image into binary.
+        // mesh->saveVisibilityImage2Binary(output_fname + ".visimage.txt");
+
+        // // glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)
+        // glfwSwapBuffers(window);
+        // glfwPollEvents();
+    }
+    myshader.deleteProgram();
+
+
 }
+
+
+
+
+bool readVisibilityFile(const std::string& filename, std::vector<int>& visible_vertices)
+{
+    FILE* fin = fopen(filename.c_str(), "rb");
+    if (fin == NULL)
+    {
+        ROS_INFO("ERROR: cannot read visibility file %s", filename.c_str());
+        return false;
+    }
+    int num = -1;
+    if (fread(&num, sizeof(int), 1, fin) != 1)
+        return false;
+    if (num <= 0)
+    {
+        ROS_INFO("WARNING: number of visible vertices in file %s is <= 0", filename.c_str());
+        return true;
+    }
+    visible_vertices.clear();
+    visible_vertices.resize(num);
+    if (fread(&visible_vertices[0], sizeof(int), num, fin) != size_t(num))
+    {
+        ROS_INFO("ERROR in reading visibility indices in file %s", filename.c_str());
+        return false;
+    }
+    fclose(fin);
+    return true;
+}
+
 int main( int argc, char** argv )
 {
-    ros::init(argc,argv,"ros_mesh_visibility");
-    ros::NodeHandle node;
-    MeshVisibility visibility(node);
+    std::string data_path = "/home/ipa-mah/catkin_ws/data/bagfile/";
 
-    std::string data_path = "/home/ipa-mah/code_test/plane-opt-rgbd/data1/test/";
-    visibility.readTriMesh("/home/ipa-mah/catkin_ws/data/bagfile1/polygon_mesh.ply");
-    visibility.readIntrinsicsAndCam2WorldPoses(data_path);
 
+    MeshVisibility* visibility = new MeshVisibility();
+    visibility->readTriMesh(data_path+"/texture_model.obj");
+    visibility->readIntrinsicsAndCam2WorldPoses(data_path);
     initGLFW();
-  //  visibility.initModelDataBuffer();
-
-  //  runRenderMode(visibility);
-
+    visibility->initModelDataBuffer();
+    runRenderMode(visibility);
+    //runSaveMode("/home/ipa-mah/code_test/plane-opt-rgbd/data1/output/",visibility);
     // Close OpenGL window and terminate GLFW
-  //  glfwTerminate();
-  //  visibility.deallocate();
-            return 0;
+    glfwTerminate();
+    visibility->deallocate();
+
+    return 0;
 }

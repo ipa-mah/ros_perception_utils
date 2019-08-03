@@ -52,12 +52,8 @@ include_directories(
     ${GLFW_INCLUDE_DIRS}
     ${GLEW_INCLUDE_DIRS}
 )
-#add_subdirectory(elibs)
-#include_directories(SYSTEM ${CMAKE_SOURCE_DIR}/elibs/glm)
-#link_directories( ${CMAKE_SOURCE_DIR}/elibs/glm)
+
 ## Class helper
-
-
 file(GLOB SOURCES "${PROJECT_SOURCE_DIR}/common/src/*.cpp")
 add_library(${PROJECT_NAME} "${SOURCES}")
 
@@ -68,9 +64,9 @@ target_link_libraries(${PROJECT_NAME}_node ${PROJECT_NAME} ${PCL_LIBRARIES} ${ca
 
 
 
-add_executable(opengl_opencv_node ros/opengl_opencv.cpp)
-add_dependencies(opengl_opencv_node ${${PROJECT_NAME}_EXPORTED_TARGETS})
-target_link_libraries(opengl_opencv_node ${PROJECT_NAME} ${PCL_LIBRARIES} ${catkin_LIBRARIES} ${Eigen3_LIBRARIES}
+add_executable(marker_ar_node ros/marker_ar.cpp)
+add_dependencies(marker_ar_node ${${PROJECT_NAME}_EXPORTED_TARGETS})
+target_link_libraries(marker_ar_node ${PROJECT_NAME} ${PCL_LIBRARIES} ${catkin_LIBRARIES} ${Eigen3_LIBRARIES}
     ${OpenCV_LIBRARIES} ${OPENGL_LIBRARIES} ${GLUT_LIBRARY} ${GLEW_LIBRARIES} glfw -lpthread -lm )
 
 
