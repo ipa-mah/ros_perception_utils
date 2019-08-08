@@ -22,6 +22,7 @@ env:
     - ROS_REPO=ros
     - CCACHE_DIR=$HOME/.ccache # enables C/C++ caching in industrial_ci
   matrix: # each line is a job
+    - ROS_DISTRO="lunar" ROS_REPO=ros-shadow-fixed # overrides the global
     - ROS_DISTRO="kinetic"
     - ROS_DISTRO="melodic"
 
@@ -30,8 +31,8 @@ matrix:
   allow_failures:
     - env: ROS_DISTRO="lunar" ROS_REPO=ros-shadow-fixed
 install:
+    - git clone --quiet --depth 1 https://github.com/ros-industrial/industrial_ci.git .industrial_ci
     - sudo apt-get update
     - sudo apt-get install -y libglm-dev libglew-dev mesa-utils freeglut3 freeglut3-dev libglfw3-dev libglfw3
-    - git clone --quiet --depth 1 https://github.com/ros-industrial/industrial_ci.git .industrial_ci
 script:
 - .industrial_ci/travis.sh
