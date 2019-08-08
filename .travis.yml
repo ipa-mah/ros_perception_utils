@@ -1,39 +1,20 @@
-# This config uses industrial_ci (https://github.com/ros-industrial/industrial_ci.git).
-# For troubleshooting, see readme (https://github.com/ros-industrial/industrial_ci/blob/master/README.rst)
+sudo: required
+dist: trusty
+language: generic
 
-language: generic # optional, just removes the language badge
-
-services:
-  - docker
-
-# include the following block if the C/C++ build artifacts should get cached by Travis,
-# CCACHE_DIR needs to get set as well to actually fill the cache
-cache:
-  directories:
-    - $HOME/.ccache
-
-git:
-  quiet: true # optional, silences the cloning of the target repository
-
-# configure the build environment(s)
-# https://github.com/ros-industrial/industrial_ci/blob/master/doc/index.rst#variables-you-can-configure
+ 
 env:
-  global: # global settings for all jobs
-    - ROS_REPO=ros
-    - CCACHE_DIR=$HOME/.ccache # enables C/C++ caching in industrial_ci
-  matrix: # each line is a job
-    - ROS_DISTRO="lunar" ROS_REPO=ros-shadow-fixed # overrides the global
-    - ROS_DISTRO="kinetic"
-    - ROS_DISTRO="melodic"
-
-# allow failures, e.g. for unsupported distros
-matrix:
-  allow_failures:
-    - env: ROS_DISTRO="lunar" ROS_REPO=ros-shadow-fixed
+  global:
+    - UPSTREAM_WORKSPACE=file
+    - CATKIN_CONFIG='--cmake-args -DCMAKE_CXX_FLAGS="-Werror=uninitialized -Werror=return-type -Werror=format"'
+  matrix:
+    - ROS_DISTRO="indigo" ROS_REPOSITORY_PATH=http://packages.ros.org/ros/ubuntu
+    - ROS_DISTRO="indigo" ROS_REPOSITORY_PATH=http://packages.ros.org/ros/ubuntu BEFORE_SCRIPT='catkin config -w $CATKIN_WORKSPACE -a -DPUBLICBUILD=1'
+    - ROS_DISTRO="kinetic" ROS_REPOSITORY_PATH=http://packages.ros.org/ros/ubuntu
+    - ROS_DISTRO="kinetic" ROS_REPOSITORY_PATH=http://packages.ros.org/ros/ubuntu BEFORE_SCRIPT='catkin config -w $CATKIN_WORKSPACE -a -DPUBLICBUILD=1'
 install:
-    - git clone --quiet --depth 1 https://github.com/ros-industrial/industrial_ci.git .industrial_ci
-    - sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 6B05F25D762E3157
+    - git clone https://github.com/ros-industrial/industrial_ci.git .ci_config
     - sudo apt-get update
     - sudo apt-get install -y libglm-dev libglew-dev mesa-utils freeglut3 freeglut3-dev libglfw3-dev libglfw3
 script:
-- .industrial_ci/travis.sh
+    - .ci_config/travis.sh
