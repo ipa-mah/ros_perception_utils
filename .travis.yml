@@ -1,33 +1,3 @@
-#sudo: required
-#dist: xenial
-#language: generic
-
- 
-#env:
-#  global:
-#    - UPSTREAM_WORKSPACE=file
-#    - CATKIN_CONFIG='--cmake-args -DCMAKE_CXX_FLAGS="-Werror=uninitialized -Werror=return-type -Werror=format"'
-#  matrix:
-#    - ROS_DISTRO="melodic" ROS_REPOSITORY_PATH=http://packages.ros.org/ros/ubuntu
-#    - ROS_DISTRO="melodic" ROS_REPOSITORY_PATH=http://packages.ros.org/ros/ubuntu BEFORE_SCRIPT='catkin config -w $CATKIN_WORKSPACE -a -DPUBLICBUILD=1'
-#    - ROS_DISTRO="melodic" BEFORE_SCRIPT=".travis/dependencies.sh"
-
-#    - ROS_DISTRO="kinetic" ROS_REPOSITORY_PATH=http://packages.ros.org/ros/ubuntu
-#    - ROS_DISTRO="kinetic" ROS_REPOSITORY_PATH=http://packages.ros.org/ros/ubuntu BEFORE_SCRIPT='catkin config -w $CATKIN_WORKSPACE -a -DPUBLICBUILD=1'
-#    - ROS_DISTRO="kinetic" BEFORE_SCRIPT=".travis/dependencies.sh"
-
-#install:
-#    - git clone https://github.com/ros-industrial/industrial_ci.git .ci_config
-#before_script:
-#    - sudo apt-get update
-#    - sudo apt-get install -y libglm-dev libglew-dev mesa-utils freeglut3 freeglut3-dev libglfw3-dev libglfw3
-#script:
-#    - .ci_config/travis.sh
-    
-    
-    
-    
-    ###########
 # This config uses industrial_ci (https://github.com/ros-industrial/industrial_ci.git).
 # For troubleshooting, see readme (https://github.com/ros-industrial/industrial_ci/blob/master/README.rst)
 
@@ -58,8 +28,5 @@ env:
 # clone and run industrial_ci
 install:
   - git clone --quiet --depth 1 https://github.com/ros-industrial/industrial_ci.git .industrial_ci
-before_script:
-    - sudo apt-get update
-    - sudo apt-get install -y libglm-dev libglew-dev mesa-utils freeglut3 freeglut3-dev libglfw3-dev libglfw3
 script:
   - .industrial_ci/travis.sh
