@@ -30,11 +30,9 @@ env:
 matrix:
   allow_failures:
     - env: ROS_DISTRO="lunar" ROS_REPO=ros-shadow-fixed
-before_install:
-    - sudo chmod +x dependencies.sh
-    - ./dependencies.sh
-# clone and run industrial_ci
 install:
-  - git clone --quiet --depth 1 https://github.com/ros-industrial/industrial_ci.git .industrial_ci
+    - sudo apt-get update
+    - sudo apt-get install -y libglm-dev libglew-dev mesa-utils freeglut3 freeglut3-dev libglfw3-dev libglfw3
+    - git clone --quiet --depth 1 https://github.com/ros-industrial/industrial_ci.git .industrial_ci
 script:
 - .industrial_ci/travis.sh
