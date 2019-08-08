@@ -32,7 +32,7 @@
 # For troubleshooting, see readme (https://github.com/ros-industrial/industrial_ci/blob/master/README.rst)
 
 language: generic # optional, just removes the language badge
-
+dist: xenial
 services:
   - docker
 
