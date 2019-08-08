@@ -12,9 +12,10 @@ env:
     - ROS_DISTRO="melodic" ROS_REPOSITORY_PATH=http://packages.ros.org/ros/ubuntu BEFORE_SCRIPT='catkin config -w $CATKIN_WORKSPACE -a -DPUBLICBUILD=1'
     - ROS_DISTRO="kinetic" ROS_REPOSITORY_PATH=http://packages.ros.org/ros/ubuntu
     - ROS_DISTRO="kinetic" ROS_REPOSITORY_PATH=http://packages.ros.org/ros/ubuntu BEFORE_SCRIPT='catkin config -w $CATKIN_WORKSPACE -a -DPUBLICBUILD=1'
-install:
-    - git clone https://github.com/ros-industrial/industrial_ci.git .ci_config
+before_install:
     - sudo apt-get update
     - sudo apt-get install -y libglm-dev libglew-dev mesa-utils freeglut3 freeglut3-dev libglfw3-dev libglfw3
+install:
+    - git clone https://github.com/ros-industrial/industrial_ci.git .ci_config
 script:
     - .ci_config/travis.sh
