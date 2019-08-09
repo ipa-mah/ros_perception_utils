@@ -10,7 +10,7 @@
 <buildtool_depend>catkin</buildtool_depend>
 <depend>cmake_modules</depend>
 <depend>message_generation</depend>
-<depend>libopencv-dev</depend>
+<depend>opencv3</depend>
 <depend>pcl_ros</depend>
 <depend>roscpp</depend>
 <depend>roslaunch</depend>
