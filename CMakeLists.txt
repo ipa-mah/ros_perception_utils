@@ -9,7 +9,9 @@ set(catkin_RUN_PACKAGES
     roscpp
     roslaunch
     roslib
-    std_msgs)
+    std_msgs
+    ros_texture_mapping
+    )
 # set catkin packages that are needed when building the code
 set(catkin_BUILD_PACKAGES ${catkin_RUN_PACKAGES} cmake_modules )
 
@@ -22,7 +24,6 @@ find_package(Eigen3 REQUIRED)
 FIND_PACKAGE(OpenGL REQUIRED)
 FIND_PACKAGE(GLUT REQUIRED)
 find_package(GLEW REQUIRED)
-
 find_package(glfw3 REQUIRED)
 FIND_PACKAGE(GLM REQUIRED)
 MESSAGE("GLM DIR : ${GLM_DIR}")
