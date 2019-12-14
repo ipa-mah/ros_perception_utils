@@ -16,7 +16,7 @@
 <depend>roslaunch</depend>
 <depend>roslib</depend>
 <depend>rospy</depend>
-<depend>ros_texture_mapping</depend>
+<!--depend>ros_texture_mapping</depend-->
 <depend>std_msgs</depend>
 <export>
 

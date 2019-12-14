@@ -31,6 +31,7 @@ struct TriMesh
     cv::Mat texture_atlas;
     std::vector<unsigned int> faces;
     std::vector<Vertex> vertices;
+    pcl::PointCloud<pcl::PointXYZ> cloud;
     int vertex_num_;
     int face_num_;
     std::string mesh_suffix_;

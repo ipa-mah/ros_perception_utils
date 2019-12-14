@@ -22,11 +22,11 @@
 #include <pcl/point_cloud.h>
 #include <pcl/PolygonMesh.h>
 #include <pcl/io/ply_io.h>
-
+#include <pcl/common/transforms.h>
 #include "ros_perception_utils/vision_utils.hpp"
 
 /* Constants */
-const float kNear = 0.05f;
+const float kNear = 0.1f;
 const float kFar = 10.0f;
 const unsigned int kImageWidth = 1920;
 const unsigned int kImageHeight = 1080;

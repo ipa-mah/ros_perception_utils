@@ -122,6 +122,7 @@ bool VisionUtils::readOBJFile(const std::string file_name,TriMesh& mesh)
         {
             iss >> x >> y >> z;
             vertices.push_back(glm::vec3(x, y, z));
+            mesh.cloud.points.push_back(pcl::PointXYZ(x,y,z));
         }
         else if (str_first == "vt")
         {
@@ -196,9 +197,6 @@ bool VisionUtils::readOBJFile(const std::string file_name,TriMesh& mesh)
         }
         // otherwise continue -- unrecognized line
     }
-
-
-
     readin.close();
     mesh.vertex_num_ = int(vertices.size());
     mesh.face_num_ = face_vidx / 3;
@@ -212,6 +210,7 @@ bool VisionUtils::readPLYFile(const std::string file_name, TriMesh& mesh)
     pcl::io::loadPLYFile(file_name,polygon_mesh);
     pcl::PointCloud<pcl::PointNormal> cloud;
     pcl::fromPCLPointCloud2(polygon_mesh.cloud,cloud);
+    pcl::fromPCLPointCloud2(polygon_mesh.cloud,mesh.cloud);
 
     mesh.vertices.resize(polygon_mesh.polygons.size()*3);
     mesh.faces.resize(polygon_mesh.polygons.size()*3);

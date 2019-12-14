@@ -10,7 +10,7 @@ set(catkin_RUN_PACKAGES
     roslaunch
     roslib
     std_msgs
-    ros_texture_mapping
+   # ros_texture_mapping
     )
 # set catkin packages that are needed when building the code
 set(catkin_BUILD_PACKAGES ${catkin_RUN_PACKAGES} cmake_modules )
@@ -59,14 +59,14 @@ file(GLOB SOURCES "${PROJECT_SOURCE_DIR}/common/src/*.cpp")
 add_library(${PROJECT_NAME} "${SOURCES}")
 
 add_executable(${PROJECT_NAME}_node ros/mesh_visibility_node.cpp)
-add_dependencies(${PROJECT_NAME}_node ${${PROJECT_NAME}_EXPORTED_TARGETS})
+#add_dependencies(${PROJECT_NAME}_node ${${PROJECT_NAME}_EXPORTED_TARGETS})
 target_link_libraries(${PROJECT_NAME}_node ${PROJECT_NAME} ${PCL_LIBRARIES} ${catkin_LIBRARIES} ${Eigen3_LIBRARIES}
     ${OpenCV_LIBRARIES} ${OPENGL_LIBRARIES} ${GLUT_LIBRARY} ${GLEW_LIBRARIES} glfw -lpthread -lm )
 
 
 
 add_executable(marker_ar_node ros/marker_ar.cpp)
-add_dependencies(marker_ar_node ${${PROJECT_NAME}_EXPORTED_TARGETS})
+#add_dependencies(marker_ar_node ${${PROJECT_NAME}_EXPORTED_TARGETS})
 target_link_libraries(marker_ar_node ${PROJECT_NAME} ${PCL_LIBRARIES} ${catkin_LIBRARIES} ${Eigen3_LIBRARIES}
     ${OpenCV_LIBRARIES} ${OPENGL_LIBRARIES} ${GLUT_LIBRARY} ${GLEW_LIBRARIES} glfw -lpthread -lm )
 

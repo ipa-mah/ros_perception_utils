@@ -1,4 +1,4 @@
-#include "ros_perception_utils/visibility.hpp"
+#include "ros_perception_utils/gl_visibility.hpp"
 MeshVisibility::MeshVisibility():focal_x_(0),focal_y_(0),
     c_x_(0),c_y_(0),image_width_(0),image_height_(0)
 {
@@ -51,11 +51,13 @@ bool MeshVisibility::readIntrinsicsAndCam2WorldPoses(const std::string filepath)
         }
         cv::Mat cam2world;
         fs[transform_flag]>>cam2world;
+        /*
         Eigen::Matrix4d pose;
         Eigen::Matrix4d eigenMat;
         cv::cv2eigen(cam2world,eigenMat);
         pose = marker2object_ *eigenMat; //cam to object centroid
         cv::eigen2cv(pose,cam2world);
+        */
         glm::mat4 trans;
         for (int i = 0; i < 4; ++i)
             for (int j = 0; j < 4; ++j)
@@ -63,6 +65,16 @@ bool MeshVisibility::readIntrinsicsAndCam2WorldPoses(const std::string filepath)
                 trans[j][i] = cam2world.at<double>(i,j);
 
             }
+
+        if(i==0)
+        {
+          pcl::PointCloud<pcl::PointXYZ> cloud;
+          Eigen::Matrix4f pose;
+          cv::cv2eigen(cam2world,pose);
+          pcl::transformPointCloud(tri_mesh_.cloud,cloud,pose.inverse());
+          pcl::io::savePLYFile("cloud0.ply",cloud);
+        }
+
         cam2world_poses_.push_back(trans);
     }
 
@@ -99,11 +111,7 @@ bool MeshVisibility::readIntrinsicsAndCam2WorldPoses(const std::string filepath)
     transform_perspective_[2][2] = (kNear + kFar) / (kNear - kFar);
     transform_perspective_[2][3] = -1;  // glm matrix is in column-major
     transform_perspective_[3][2] = 2 * kFar * kNear / (kNear - kFar);
-    //    image_buffer_arr_ = new float*[image_height_];
-    //    for(int i=0;i<image_height_;i++)
-    //    {
-    //        image_buffer_arr_[i] = new float[3*image_width_];
-    //    }
+
 
 }
 
@@ -305,7 +313,7 @@ void MeshVisibility::saveDepth2PNG(const std::string filename)
             // need to reverse the vertical coordinate.
             unsigned short &d = mat.at<unsigned short>(image_height_ - i - 1, j);
             float depth = image_buffer_arr_[i][3 * j];
-            d = (unsigned int)(depth * 5000);  // scale depth data to see it more clearly
+            d = (unsigned int)(depth * 10000);  // scale depth data to see it more clearly
         }
     }
     cv::imwrite(filename, mat);

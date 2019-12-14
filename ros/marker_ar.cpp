@@ -1,8 +1,9 @@
 #include <stdio.h>
 #include <opencv2/opencv.hpp>
-#include "ros_perception_utils/marker.hpp"
+#include <iostream>
+#include "ros_perception_utils/vision_utils.hpp"
 int main (int argc, char **argv) {
 
-    std::cout<<"hello"<<std::endl;
+    TriMesh tri_mesh;
     return 0;
 } 
