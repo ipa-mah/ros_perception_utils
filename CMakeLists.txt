@@ -1,43 +1,31 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(ros_perception_utils)
-#include(ExternalProject)
 SET(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
 add_compile_options(-std=c++11)
 set(CMAKE_EXPORT_COMPILE_COMMANDS 1)
 set(catkin_RUN_PACKAGES
+    cv_bridge
+    image_transport
     message_generation
+    pcl_ros
+    rosbag
     roscpp
     roslaunch
     roslib
+    rospy
     std_msgs
-   # ros_texture_mapping
     )
-# set catkin packages that are needed when building the code
 set(catkin_BUILD_PACKAGES ${catkin_RUN_PACKAGES} cmake_modules )
-
 
 ## Find catkin macros and libraries
 find_package(catkin REQUIRED COMPONENTS ${catkin_BUILD_PACKAGES})
 find_package(OpenCV 3 REQUIRED)
 find_package(Eigen3 REQUIRED)
-
-FIND_PACKAGE(OpenGL REQUIRED)
-FIND_PACKAGE(GLUT REQUIRED)
-find_package(GLEW REQUIRED)
-find_package(glfw3 REQUIRED)
-FIND_PACKAGE(GLM REQUIRED)
-MESSAGE("GLM DIR : ${GLM_DIR}")
 find_package(PCL REQUIRED)
+
 link_directories(${PCL_LIBRARY_DIRS})
 include_directories(${PCL_INCLUDE_DIRS})
 
-add_service_files(
-   FILES
-   MeshVisibility.srv
-)
-generate_messages(
-    DEPENDENCIES std_msgs
-)
 catkin_package(
     INCLUDE_DIRS common/include
     CATKIN_DEPENDS ${catkin_RUN_PACKAGES}
@@ -47,28 +35,22 @@ include_directories(
     ${catkin_INCLUDE_DIRS}
     ${OpenCV_INCLUDE_DIRS}
     ${Eigen3_INCLUDE_DIRS}
-    ${GLM_INCLUDE_DIRS}
-    ${OPENGL_INCLUDE_DIRS}
-    ${GLUT_INCLUDE_DIRS}
-    ${GLFW_INCLUDE_DIRS}
-    ${GLEW_INCLUDE_DIRS}
 )
 
 ## Class helper
 file(GLOB SOURCES "${PROJECT_SOURCE_DIR}/common/src/*.cpp")
 add_library(${PROJECT_NAME} "${SOURCES}")
 
-add_executable(${PROJECT_NAME}_node ros/mesh_visibility_node.cpp)
-#add_dependencies(${PROJECT_NAME}_node ${${PROJECT_NAME}_EXPORTED_TARGETS})
-target_link_libraries(${PROJECT_NAME}_node ${PROJECT_NAME} ${PCL_LIBRARIES} ${catkin_LIBRARIES} ${Eigen3_LIBRARIES}
-    ${OpenCV_LIBRARIES} ${OPENGL_LIBRARIES} ${GLUT_LIBRARY} ${GLEW_LIBRARIES} glfw -lpthread -lm )
+target_link_libraries(${PROJECT_NAME}
+                        ${catkin_LIBRARIES}
+                        ${PCL_LIBRARIES}
+                        ${OpenCV_LIBRARIES}
+                        ${Eigen3_INCLUDE_DIRS})
+#add_dependencies(${PROJECT_NAME}
+#                    ${${PROJECT_NAME}_EXPORTED_TARGETS})
 
 
-
-add_executable(marker_ar_node ros/marker_ar.cpp)
-#add_dependencies(marker_ar_node ${${PROJECT_NAME}_EXPORTED_TARGETS})
-target_link_libraries(marker_ar_node ${PROJECT_NAME} ${PCL_LIBRARIES} ${catkin_LIBRARIES} ${Eigen3_LIBRARIES}
-    ${OpenCV_LIBRARIES} ${OPENGL_LIBRARIES} ${GLUT_LIBRARY} ${GLEW_LIBRARIES} glfw -lpthread -lm )
-
+add_executable(rosbag_topics_node ros/rosbag_topics_node.cpp)
+target_link_libraries(rosbag_topics_node ${PROJECT_NAME})
 
 
