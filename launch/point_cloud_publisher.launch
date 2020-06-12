@@ -1,0 +1,7 @@
+<?xml version="1.0"?>
+<launch>
+       <node name="" pkg="ros_perception_utils" type="point_cloud_publiser_node" output="screen">
+           <rosparam command="load" file="$(find ros_perception_utils)/launch/point_cloud_publisher_params.yaml"/>
+           <param name="pc_file_path" value="$(find ros_perception_utils)/data/cow.ply" />
+       </node>
+</launch>

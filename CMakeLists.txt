@@ -39,6 +39,7 @@ include_directories(
 
 ## Class helper
 file(GLOB SOURCES "${PROJECT_SOURCE_DIR}/common/src/*.cpp")
+
 add_library(${PROJECT_NAME} "${SOURCES}")
 
 target_link_libraries(${PROJECT_NAME}
@@ -53,4 +54,6 @@ target_link_libraries(${PROJECT_NAME}
 add_executable(rosbag_topics_node ros/rosbag_topics_node.cpp)
 target_link_libraries(rosbag_topics_node ${PROJECT_NAME})
 
+add_executable(point_cloud_publiser_node ros/point_cloud_publiser_node.cpp)
+target_link_libraries(point_cloud_publiser_node ${PROJECT_NAME})
 

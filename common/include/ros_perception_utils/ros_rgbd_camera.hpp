@@ -14,7 +14,8 @@
 class RosRGBDCamera
 {
   public:
-	typedef cv::Ptr<RosRGBDCamera> Ptr;
+  using Ptr = std::shared_ptr<RosRGBDCamera>;
+  using ConstPtr = std::shared_ptr<const RosRGBDCamera>;
 	RosRGBDCamera(const ros::NodeHandle& handle, const std::string& rgb_topic, const std::string& depth_topic, const std::string& rgb_info_topic);
 	virtual ~RosRGBDCamera();
 

@@ -1,0 +1,15 @@
+
+
+#Camera parameters of depth camera
+#All values are of type double
+fx: 614.6654
+fy: 614.5995
+cx: 326.94885
+cy: 232.761398
+width: 640
+height: 480
+point_cloud_topic: "/point_cloud_topic"
+rgb_topic: "/rgb_topic"
+depth_topic: "/depth_topic"
+frame: "map"
+rate: 30.0
